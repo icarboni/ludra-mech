@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ludra · Mechanics Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#1a0f33; --bg2:#2b1757; --card:#2d1a5c; --card2:#22134a; --line:#6c4fc0;
+    --text:#efe8ff; --muted:#b8a8e6;
+    --p1:#ff5fa8; --p2:#38e08a;
+    --tank:#4aa8ff; --chanter:#ff9b3d; --cleric:#ffd94a; --dps:#ffb0d4;
+    --ludra:#b57bff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;color:var(--text);font-family:Nunito,system-ui,sans-serif;
+    background:radial-gradient(1200px 700px at 30% -10%,#4a2a92 0%,transparent 60%),linear-gradient(180deg,var(--bg2),var(--bg1));}
+  .wrap{max-width:1280px;margin:0 auto;padding:28px 20px 60px}
+  .eyebrow{font-family:Cinzel,serif;font-size:12px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase}
+  h1{font-family:Cinzel,serif;font-weight:800;font-size:40px;margin:2px 0 16px;letter-spacing:.04em;text-shadow:0 0 24px rgba(181,123,255,.5)}
+  .bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;background:rgba(20,10,45,.55);border:1px solid var(--line);
+    border-radius:14px;padding:10px 14px;margin-bottom:12px}
+  .leg{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
+  .leg svg{width:20px;height:20px}
+  .spacer{flex:1}
+  .ctrl{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{background:transparent;color:var(--text);border:0;padding:6px 10px;font:700 12px Nunito,sans-serif;cursor:pointer}
+  .seg button.on{background:#f4eaff;color:#2a1650}
+  .btn{background:#f4eaff;color:#2a1650;border:0;border-radius:9px;padding:7px 12px;font:800 12px Nunito,sans-serif;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .p1tag{color:var(--p1)} .p2tag{color:var(--p2)}
+  .nav{display:flex;align-items:center;gap:10px;margin:4px 0 12px}
+  .arrow{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:#f4eaff;color:#2a1650;font:800 22px Nunito,sans-serif;cursor:pointer;flex:none;display:grid;place-items:center}
+  .arrow:disabled{opacity:.3;cursor:default}
+  .tabs{display:flex;flex-direction:column;gap:8px;flex:1;align-items:center}
+  .tabrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center}
+  .tabphase{font:800 11px Nunito,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+  .tab{border:1px solid var(--line);background:rgba(20,10,45,.55);color:var(--muted);border-radius:999px;padding:8px 16px;font:700 14px Cinzel,serif;letter-spacing:.05em;cursor:pointer}
+  .tab.on{background:var(--ludra);color:#1a0f33;border-color:var(--ludra)}
+  .grid{display:block}
+  .card{display:none}
+  .card.active{display:grid;grid-template-columns:min(600px,calc(100vh - 120px),100%) minmax(280px,1fr);grid-template-rows:auto 1fr;column-gap:22px;padding:20px}
+  .card.active>h2{grid-column:1 / -1;font-size:24px;margin-bottom:14px}
+  .side{display:flex;flex-direction:column;gap:2px}
+  .side .steps{margin-top:0}
+  .side .cap{font-size:16px;min-height:72px}
+  .side .notes{font-size:14.5px}
+  @media (max-width:860px){.card.active{grid-template-columns:1fr}.side{margin-top:10px}}
+  .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:18px;padding:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .card h2{display:flex;align-items:center;gap:10px;font-family:Cinzel,serif;font-size:18px;margin:0 0 10px;letter-spacing:.06em}
+  .num{width:22px;height:22px;border-radius:50%;background:#f4eaff;color:#2a1650;display:grid;place-items:center;font:800 12px Nunito,sans-serif}
+  .card h2 .seg{margin-left:auto}
+  .stage{position:relative;border-radius:14px;overflow:hidden;background:#160b33;border:1px solid #3d2780}
+  .stage svg{display:block;width:100%;height:auto}
+  .steps{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 6px;align-items:center}
+  .steps .pill{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:4px 10px;font:800 11px Nunito,sans-serif;cursor:pointer}
+  .steps .pill.on{background:var(--ludra);color:#1a0f33;border-color:var(--ludra)}
+  .steps .play{margin-left:auto}
+  .cap{min-height:44px;font-size:14px;line-height:1.45;background:rgba(10,5,25,.45);border-radius:10px;padding:9px 12px;border-left:3px solid var(--ludra)}
+  .cap b{color:#fff}
+  .notes{margin-top:8px;font-size:13px;color:var(--muted);line-height:1.5}
+  .notes ul{margin:4px 0 0;padding-left:18px}
+  .notes li b{color:var(--text)}
+  .foot{margin-top:18px;font-size:12px;color:var(--muted)}
+  @keyframes flash{0%,100%{opacity:1}50%{opacity:.35}}
+  .flash{animation:flash .5s ease-in-out 4}
+  @keyframes orbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+  .orbcore{transform-box:fill-box;transform-origin:center;animation:orbPulse 1s ease-in-out infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spin{transform-box:fill-box;transform-origin:center;animation:spin 1.1s linear infinite}
+  @keyframes hurt{0%,100%{opacity:0}50%{opacity:.85}}
+  .hurt{animation:hurt .7s ease-in-out infinite}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Static plan · Aion 2</div>
+  <h1>Ludra · Mechanics</h1>
+
+  <div class="bar" id="legend"></div>
+
+  <div class="bar">
+    <div class="ctrl"><span class="p1tag">P1 DPS</span>
+      <div class="seg" data-cfg="p1"><button data-v="RR">2 ranged</button><button data-v="MR">1 melee + 1 ranged</button></div></div>
+    <div class="ctrl"><span class="p2tag">P2 DPS</span>
+      <div class="seg" data-cfg="p2"><button data-v="RR">2 ranged</button><button data-v="MR">1 melee + 1 ranged</button></div></div>
+    <div class="spacer"></div>
+    <div class="ctrl">Speed
+      <div class="seg" data-cfg="speed"><button data-v="1.6">Slow</button><button data-v="1">Normal</button><button data-v="0.6">Fast</button></div></div>
+    <button class="btn" id="rot">↻ Turn 180°</button>
+  </div>
+
+  <div class="nav"><button class="arrow" id="prev" aria-label="Previous">‹</button><div class="tabs" id="tabs"></div><button class="arrow" id="next" aria-label="Next">›</button></div>
+  <div class="grid" id="grid"></div>
+  <div class="foot">Fill colour = role · ring colour = party. Click a step to jump to it, or press pause to freeze the animation.</div>
+</div>
+
+<script>
+const COL = {p1:'#ff5fa8',p2:'#38e08a',tank:'#4aa8ff',chanter:'#ff9b3d',cleric:'#ffd94a',dps:'#ffb0d4',ludra:'#b57bff',orb:'#57c7ff',red:'#ff4757'};
+const ROLE_LABEL = {tank:'Tank',cleric:'Cleric',chanter:'Chanter',dps:'DPS'};
+const H = 46;            // arena half size
+const CIRCLE_R = 46;     // reduced arena radius
+const NOCIRCLE = 95;
+const BIG_R = 46;        // reverted red circle (covers the whole square)
+const V = 66;            // view extent (space around the square)     // radius big enough to mean "no circle"
+
+const cfg = {p1:'RR', p2:'RR', speed:1, rot:false};
+
+/* ---------- roster & positions ---------- */
+function roster(){
+  const out=[];
+  for(const p of [1,2]){
+    const k=cfg['p'+p];
+    out.push({id:`p${p}t`,party:p,role:'tank',tag:'T'});
+    out.push({id:`p${p}h`,party:p,role:'cleric',tag:'Cl'});
+    out.push({id:`p${p}c`,party:p,role:'chanter',tag:'Ch'});
+    out.push({id:`p${p}a`,party:p,role:'dps',tag:k==='RR'?'R':'M'});
+    out.push({id:`p${p}b`,party:p,role:'dps',tag:'R'});
+  }
+  return out;
+}
+const pname = id => {
+  const p=id[1], r=id[2];
+  const k=cfg['p'+p];
+  const m={t:'Tank',h:'Cleric',c:'Chanter',a:k==='RR'?'Ranged (front)':'Melee',b:'Ranged (back)'};
+  return `P${p} ${m[r]}`;
+};
+// +y = FRONT of Ludra (where the head points), -y = BEHIND. P1 on the left (-x), P2 on the right (+x).
+function sideLayout(p, layout){
+  const s = p===1?-1:1, k=cfg['p'+p];
+  let L;
+  if(layout==='start') L={t:[7,14],h:[31,0],c:[12,-21],a:k==='RR'?[33,33]:[5,-16],b:[33,-33]};
+  else                 L={t:[7,14],h:[30,0],c:[12,-21],a:k==='RR'?[27,27]:[5,-16],b:[27,-27]};
+  const o={};
+  for(const r in L) o[`p${p}${r}`]=[L[r][0]*s, L[r][1]];
+  return o;
+}
+const layout = name => ({...sideLayout(1,name),...sideLayout(2,name)});
+function stackAt(cx,cy,dx=7.4,dy=4){
+  // tight 2-row group: P1 on the left half, P2 on the right half
+  const o={}, order=['b','c','h','a','t'];
+  order.forEach((r,i)=>{ const row=i%2, col=Math.floor(i/2);
+    o['p1'+r]=[cx-dx/2-col*dx, cy+(row?dy:-dy)];
+    o['p2'+r]=[cx+dx/2+col*dx, cy+(row?dy:-dy)]; });
+  return o;
+}
+
+/* ---------- orbs ---------- */
+function orbsFull(){
+  return {
+    f:{x:0,y:52,red:true}, fl:{x:-51,y:51}, fr:{x:51,y:51}, bl:{x:-51,y:-51}, br:{x:51,y:-51}
+  };
+}
+function orbsCircle(){
+  const d=40;
+  return { f:{x:0,y:d,red:true}, l:{x:-d,y:0}, r:{x:d,y:0}, k:{x:0,y:-d} };
+}
+// Red orb → second tank (P2). If a blue orb has no ranged to take it,
+// the second tank takes that blue orb and the main tank takes the red one.
+function resolveTanks(A){
+  const open=Object.keys(A).filter(k=>k!=='f'&&A[k]===null);
+  if(open.length){ open.sort((a,b)=>(b.endsWith('r')?1:0)-(a.endsWith('r')?1:0)); A[open[0]]='p2t'; A.f='p1t'; open.slice(1).forEach(k=>A[k]=k.endsWith('l')?'p1h':'p2h'); }
+  else A.f='p2t';
+  return A;
+}
+function assignFull(){
+  return resolveTanks({
+    f:null,
+    fl: cfg.p1==='RR'?'p1a':null, bl:'p1b',
+    fr: cfg.p2==='RR'?'p2a':null, br:'p2b'
+  });
+}
+function assignCircle(){
+  // sides → each party's cleric, back → P1 back ranged
+  return resolveTanks({f:null, l:'p1h', r:'p2h', k:'p1b'});
+}
+const orbName = {f:'Front middle',fl:'Front-left corner',fr:'Front-right corner',bl:'Back-left corner',br:'Back-right corner',l:'Left side',r:'Right side',k:'Back'};
+
+/* ---------- scenes ---------- */
+// snapshot: {pos, r, purple, red, orbs:{id:{x,y,red,o}}, lines:0..1, fx:[], zin, zout}
+function base(over){return Object.assign({pos:layout('start'),r:NOCIRCLE,purple:0,red:0,orbs:{},lines:0,fx:[],zin:'',zout:'',face:0,cone:{a:180,o:0,f:0},eye:0,eyeId:null,grid:0,tiles:{},aoe:{},diag:{o:0,f:0},ludra:1,lpos:[0,0],lanes:{},laser:{e:'top',p:0,o:0}},over);}
+function withOrbs(set, o){const r={};for(const k in set) r[k]={...set[k],o};return r;}
+function moveToOrbs(pos, orbs, asg){
+  const p={...pos};
+  for(const k in asg){ p[asg[k]]=[orbs[k].x, orbs[k].y]; }
+  return p;
+}
+
+function sceneStart(){
+  const st=layout('start');
+  const door=stackAt(0,-54);                 // group entering from Ludra's back side
+  const inside=stackAt(0,-25,6.6,3.6);
+  const w=(b,o)=>({...b,...o});
+  return [
+    {cap:'<b>Entering the arena.</b> Ludra is looking at us. The tank is already waiting on the far side.', move:900, hold:2000,
+      s:base({pos:w(door,{p1t:[0,36]}),face:180})},
+    {cap:'<b>The tank pulls.</b> Ludra turns around to face the tank, so his <b>back</b> is now towards us.', move:1700, hold:1000,
+      s:base({pos:w(door,{p1t:[-7,14]}),face:0})},
+    {cap:'<b>The group comes in on his back.</b> The second tank goes around the side to join the main tank.', move:1500, hold:400,
+      s:base({pos:w(inside,{p1t:[-7,14],p2t:[34,4]}),face:0})},
+    {cap:'<b>Spread to your spot.</b> Tanks on the <b>head</b> · Clerics in the <b>middle of their side</b> · Chanters at the <b>back</b> of their side · Melee next to their chanter · Ranged in the <b>corners</b>.', move:1600, hold:2600,
+      s:base({pos:st,face:0})},
+    {cap:'<b>Hold positions.</b> <span class="p1tag">P1 (pink) takes the left side</span>, <span class="p2tag">P2 (green) takes the right side</span>. Stay on your party\'s half whenever you can.', move:300, hold:2400,
+      s:base({pos:st,face:0})},
+  ];
+}
+
+function sceneOrbs(mode){
+  if(mode==='full'){
+    const st=layout('start'), O=orbsFull(), A=assignFull();
+    return [
+      {cap:'<b>Start positions.</b> Wait for the orbs.', move:700, hold:900, s:base({pos:st})},
+      {cap:'<b>Orbs spawn just outside the arena:</b> 3 in front (red one in the middle, blue at the front corners) and 2 at the back corners.', move:600, hold:1500, s:base({pos:st,orbs:withOrbs(O,1)})},
+      {cap:'<b>Who takes what:</b> dashed lines show your orb. Red → <b>second tank</b> (P2). Blue → <b>ranged</b>. If a blue orb has no ranged, the second tank takes it and the main tank takes the red.', move:400, hold:1700, s:base({pos:st,orbs:withOrbs(O,1),lines:1})},
+      {cap:'<b>Take your orb</b> before it lands.', move:1300, hold:700, s:base({pos:moveToOrbs(st,O,A),orbs:withOrbs(O,1),lines:0})},
+      {cap:'<b>Orbs absorbed.</b>', move:450, hold:700, s:base({pos:moveToOrbs(st,O,A),orbs:withOrbs(O,0)})},
+      {cap:'<b>Back to your positions.</b>', move:1300, hold:1300, s:base({pos:st})},
+    ];
+  } else {
+    const st=layout('start'), cp=layout('circle'), O=orbsCircle(), A=assignCircle();
+    const C={r:CIRCLE_R,purple:1,zout:'DEATH',zin:'SAFE'};
+    return [
+      {cap:'<b>Start positions</b> on the full arena.', move:700, hold:900, s:base({pos:st})},
+      {cap:'<b>The arena becomes a circle.</b> Everything outside it (purple) kills you: ranged step in from the corners, everyone else keeps their spot.', move:1600, hold:1300, s:base({pos:cp,...C})},
+      {cap:'<b>Orbs spawn inside the circle, near the edge:</b> front (red), back and both sides.', move:600, hold:1400, s:base({pos:cp,...C,orbs:withOrbs(O,1)})},
+      {cap:'<b>Who takes what:</b> red front orb → <b>second tank</b> (P2). Side orbs → <b>clerics</b> (each on their side). Back orb → <b>P1 back ranged</b>.', move:400, hold:1700, s:base({pos:cp,...C,orbs:withOrbs(O,1),lines:1})},
+      {cap:'<b>Take your orb.</b> Don\'t step outside the circle.', move:1100, hold:700, s:base({pos:moveToOrbs(cp,O,A),...C,orbs:withOrbs(O,1)})},
+      {cap:'<b>Orbs absorbed.</b>', move:450, hold:700, s:base({pos:moveToOrbs(cp,O,A),...C,orbs:withOrbs(O,0)})},
+      {cap:'<b>Back to your circle spot.</b>', move:1100, hold:1300, s:base({pos:cp,...C})},
+    ];
+  }
+}
+
+function sceneRevert(){
+  const cp=layout('circle');
+  const RED={r:BIG_R,purple:.4,red:1,zin:'DANGER',zout:'DAMAGE'};
+  return [
+    {cap:'<b>Circle phase.</b> Inside is safe, the purple outside <b>kills</b>.', move:700, hold:1600,
+      s:base({pos:cp,r:CIRCLE_R,purple:1,zin:'SAFE',zout:'DEATH'})},
+    {cap:'<b>The circle reverts!</b> The <b>whole circle turns red</b>. Don\'t run out on your own.', move:900, hold:1400,
+      s:base({pos:cp,...RED,fx:['flash','hurt']})},
+    {cap:'<b>Group BEHIND Ludra</b>, at the back edge of the red circle.', move:1500, hold:1000,
+      s:base({pos:stackAt(0,-33,6.6,3.6),...RED,fx:['hurt']})},
+    {cap:'<b>Exit together</b> through the back, all the way out of the red circle.', move:1300, hold:600,
+      s:base({pos:stackAt(0,-57),...RED})},
+    {cap:'<b>Stay stacked outside.</b> You take damage out here, but staying grouped lets the <b>clerics heal everyone</b>.', move:300, hold:2800,
+      s:base({pos:stackAt(0,-57),...RED,fx:['heal','hurtOut']})},
+  ];
+}
+
+function perim(u, a=42){
+  u=((u%1)+1)%1; const d=u*8*a;
+  if(d<2*a) return [-a+d,-a];          // back edge, left → right
+  if(d<4*a) return [a,-a+(d-2*a)];     // right edge, back → front
+  if(d<6*a) return [a-(d-4*a),a];      // front edge, right → left
+  return [-a,a-(d-6*a)];               // left edge, front → back
+}
+function onCircle(u, r=39){ const a=(u*360+225)*Math.PI/180; return [r*Math.cos(a), r*Math.sin(a)]; }
+function sceneTornado(){
+  const st=layout('circle');
+  const ARENA={r:CIRCLE_R,purple:1,zout:'DEATH'};
+  // ranged + clerics each get a slot on the edge; P1 on the left half, P2 on the right
+  const slots={p1b:0.0, p2b:0.25, p2h:0.375, p2a:0.5, p1a:0.75, p1h:0.875};
+  const ranged=Object.keys(slots).filter(id=>!(id.endsWith('a') && cfg['p'+id[1]]==='MR'));
+  // melee holding a tornado: melee dps first, then chanters — enough to make at least 6 tornadoes
+  const meleePool=['p1a','p2a'].filter(id=>cfg['p'+id[1]]==='MR').concat(['p1c','p2c']);
+  const holders=meleePool.slice(0,Math.max(1,6-ranged.length));
+  const boss={...st};
+  for(const p of [1,2]){const s=p===1?-1:1; boss[`p${p}c`]=[11*s,-11]; if(cfg['p'+p]==='MR') boss[`p${p}a`]=[4*s,-16.5];}
+  // each holder hands the tornado to a ranged on their own side
+  const used=new Set(), give={};
+  for(const h of holders){ const r=ranged.find(id=>id[1]===h[1]&&!used.has(id))||ranged.find(id=>!used.has(id))||ranged[0]; used.add(r); give[h]=r; }
+  const LAG=0.04;
+  const posAt=sh=>{const P={...boss}; ranged.forEach(id=>P[id]=onCircle(slots[id]+sh)); return P;};
+  const torAt=(sh,o=1)=>{const t={}; ranged.forEach(id=>t['t_'+id]={...xy(perim(slots[id]+sh-LAG)),o});
+    holders.forEach(h=>t['t_'+h]={...xy(perim(slots[give[h]]+sh-2*LAG)),o}); return t;};
+  const xy=p=>({x:p[0],y:p[1]});
+  const P0=posAt(0);
+  const spawn={}; ranged.forEach(id=>spawn['t_'+id]={...xy(P0[id]),o:1}); holders.forEach(h=>spawn['t_'+h]={...xy(P0[h]),o:1});
+  const spawn0={}; for(const k in spawn) spawn0[k]={...spawn[k],o:0};
+  const inward=(p,d)=>{const L=Math.hypot(p[0],p[1]); return [p[0]-p[0]/L*d, p[1]-p[1]/L*d];};
+  const runPos={...P0}, runTor={...spawn};
+  holders.forEach(h=>{const q=inward(P0[give[h]],7); runPos[h]=q; runTor['t_'+h]={...xy(q),o:1};});
+  const endTor={}; for(const k in runTor) endTor[k]={...runTor[k],o:0};
+  const endPos={...P0};
+  const steps=[
+    {cap:'<b>Start positions.</b> The arena is already locked in the big circle: outside (purple) kills.', move:700, hold:900, s:base({pos:st,...ARENA})},
+    {cap:'<b>Tornado phase.</b> Ranged and clerics spread out to the <b>edge of the circle</b>. Melee stay on the boss.', move:1500, hold:800, s:base({pos:P0,tor:spawn0,...ARENA})},
+    {cap:`<b>${ranged.length+holders.length} purple tornadoes spawn</b> on players, all across the arena. Ranged keep theirs out at the edge.`, move:500, hold:1600, s:base({pos:P0,tor:spawn,...ARENA})},
+    {cap:'<b>A melee has a tornado.</b> He runs to the nearest ranged on his side and leaves it there. Never the opposite: ranged don\'t bring tornadoes to the boss.', move:1600, hold:1200, s:base({pos:runPos,tor:runTor,...ARENA})},
+    {cap:'<b>He goes straight back to the boss</b> to DPS. The tornado stays with the ranged, out at the edge, away from the melee.', move:1500, hold:2200, s:base({pos:endPos,tor:runTor,...ARENA})},
+    {cap:'<b>Tornadoes fade.</b>', move:900, hold:1200, s:base({pos:endPos,tor:endTor,...ARENA})},
+  ];
+  return steps;
+}
+
+function sceneEye(){
+  const ARENA={r:CIRCLE_R,purple:1,zout:'DEATH'};
+  const st=layout('circle');
+  const tgt='p1b';                      // the player marked with the eye
+  const near=[-13,-3];                  // close to Ludra, on his side
+  // everyone else moves away from him: spread on an arc on the other half (tanks keep the head)
+  const order=['p1h','p1c','p2c','p2b','p2h','p1a','p2a'];
+  const away={...st,[tgt]:near};
+  order.forEach((id,i)=>{ const th=(-78+i*(140/(order.length-1)))*Math.PI/180; away[id]=[31*Math.cos(th),31*Math.sin(th)]; });
+  const coneA=Math.atan2(near[1],near[0])*180/Math.PI;
+  const via={...away,[tgt]:[-4,-17]};
+  const out={...away,[tgt]:[17,-8]};
+  const E=(o)=>({eyeId:tgt,eye:o});
+  const F=coneA-90;   // Ludra's head turns towards the marked player
+  return [
+    {cap:'<b>Positions.</b>', move:700, hold:800, s:base({pos:st,...ARENA,...E(0)})},
+    {cap:'<b>The eye marks a player.</b>', move:500, hold:1300, s:base({pos:st,...ARENA,...E(1)})},
+    {cap:'<b>Everyone moves away from him</b>, to the other half. <b>He goes close to Ludra.</b>', move:1700, hold:900, s:base({pos:away,...ARENA,...E(1)})},
+    {cap:'<b>Ludra turns his head to him and the orange cone appears</b>, aimed at where he stands.', move:600, hold:1400, s:base({pos:away,...ARENA,...E(1),cone:{a:coneA,o:1,f:0},face:F})},
+    {cap:'<b>He leaves the middle of the cone</b>, going behind Ludra…', move:900, hold:0, s:base({pos:via,...ARENA,...E(1),cone:{a:coneA,o:1,f:0},face:F})},
+    {cap:'<b>…to the other side.</b> The cone stays aimed at where he was.', move:900, hold:900, s:base({pos:out,...ARENA,...E(1),cone:{a:coneA,o:1,f:0},face:F})},
+    {cap:'<b>The cone hits the empty side.</b> Nobody is in it.', move:300, hold:1300, s:base({pos:out,...ARENA,...E(0),cone:{a:coneA,o:1,f:1},face:F})},
+    {cap:'<b>Back to your positions.</b>', move:1400, hold:1000, s:base({pos:st,...ARENA,...E(0),cone:{a:coneA,o:0,f:0}})},
+  ];
+}
+
+// Bingo. Grid is read with FRONT at the top; cells are (col, row from the top).
+// Party order is always: tank (no number) · chanter 1 · dps 2 · dps 3 · cleric 4
+const BINGO = {
+  v1:{ // everyone has their own number 1–9 and 0
+    spots:[ // [player, col, row, arrow dc, arrow dr]
+      ['p1c',1,2,0,-1],['p1a',2,2,0,-1],['p1b',3,2,0,-1],['p1h',4,2,0,-1],   // 1 2 3 4 ↑
+      ['p2c',1,3,0,1], ['p2a',2,3,0,1], ['p2b',3,3,0,1], ['p2h',4,3,0,1],    // 5 6 7 8 ↓
+      ['p1t',0,0,0,1], ['p2t',5,5,0,-1]],                                      // 9 ↓ · 0 ↑
+    labels:{p1c:'1',p1a:'2',p1b:'3',p1h:'4',p2c:'5',p2a:'6',p2b:'7',p2h:'8',p1t:'9',p2t:'0'},
+    blue:[4,4], orbTop:'p1a', orbLeft:'p1t', marks:[], rounds:2, tanksOrbs:false
+  },
+  v2:{ // numbers 1–4 in the corners; P1 takes the outer spot, P2 the inner one; tanks inside
+    spots:[
+      ['p1c',0,0,1,0],['p2c',0,1,1,0],     // 1 → right
+      ['p1a',5,0,0,1],['p2a',4,0,0,1],     // 2 ↓ down
+      ['p1b',5,5,-1,0],['p2b',5,4,-1,0],   // 3 ← left
+      ['p1h',0,5,0,-1],['p2h',1,5,0,-1],   // 4 ↑ up
+      ['p1t',2,2,0,1],['p2t',3,3,0,-1]],   // tanks inside
+    labels:{p1c:'1',p2c:'1',p1a:'2',p2a:'2',p1b:'3',p2b:'3',p1h:'4',p2h:'4'},
+    blue:[4,3], orbTop:'p2t', orbLeft:'p1t', rounds:4, tanksOrbs:true,
+    marks:[['1',0.5,0.5],['2',4.5,0.5],['3',4.5,4.5],['4',0.5,4.5]]   // inside the square, between the corner spots
+  }
+};
+// Last bingo (phase 2): same as version 2, plus balls in the 4 corners, and no diagonal
+BINGO.last=Object.assign({},BINGO.v2,{cornerBalls:true,noDiag:true,noSideOrbs:true,
+  marks:[['1',0.5,0.5],['2',4.5,0.5],['3',4.5,4.5],['4',0.5,4.5]]});   // numbers inside the square, between the corner spots
+function bingoLabels(mode){ return BINGO[mode||'v1'].labels; }
+function sceneBingo(mode){
+  const V=BINGO[mode||'v1'];
+  const st=layout('start'), CW=2*H/6;
+  const D=(c,r)=>[-H+CW*(c+.5), H-CW*(r+.5)];
+  const cellOf=p=>[Math.max(0,Math.min(5,Math.floor((p[0]+H)/CW))),Math.max(0,Math.min(5,Math.floor((p[1]+H)/CW)))];
+  const ids=roster().map(r=>r.id);
+  const isTank=id=>id.endsWith('t');
+  const at=k=>{const P={}; for(const [id,c,r,dc,dr] of V.spots) P[id]=D(c+dc*k,r+dr*k); return P;};
+  const BLUE=cellOf(D(...V.blue));
+  const circ=(P,who,o,boom=0,rd=0)=>{const c={};who.forEach(id=>c['c'+rd+'_'+id]={x:P[id][0],y:P[id][1],o,boom});return c;};
+  const reveal=(P,who,prev)=>{const t={...prev};who.forEach(id=>{const [i,j]=cellOf(P[id]);const blue=i===BLUE[0]&&j===BLUE[1];t[i+','+j]={c:blue?'blue':'red',o:1};});return t;};
+  const orbs={T:{x:0,y:H+6},L:{x:-H-6,y:D(0,2.5)[1]}};
+  const marks=V.marks.map(([l,c,r])=>{const q=D(c,r);return {l,x:q[0],y:q[1]};});
+  const B=o=>base(Object.assign({grid:1,marks},o));
+  const tag=id=>{const l=V.labels[id];return l?`#${l}`:'tank';};
+  const corners = V.marks.length>0;
+  const arrows = corners
+    ? '<b>1 → right · 2 ↓ down · 3 ← left · 4 ↑ up</b>, tanks inside (one down, one up)'
+    : '1–4 up, 5–8 down, 9 down, 0 up';
+  const P0=at(0);
+  const steps=[
+    {cap:corners?'<b>Everyone on their number.</b> Corners: P1 on the outer spot, P2 on the inner one. Tanks inside.':'<b>Everyone on their number.</b>', move:1200, hold:900, s:base({pos:P0,marks})},
+    {cap:'<b>Bingo!</b> The floor turns into a light purple 6×6 grid and <b>orange circles appear right on top of everyone</b>.', move:500, hold:1300, s:B({pos:P0,aoe:circ(P0,ids,1,0,0)})},
+  ];
+  let pos=P0, who=ids, tiles={};
+  for(let k=1;k<=V.rounds;k++){
+    const prev=pos, next={...pos}; const Pk=at(k); who.forEach(id=>next[id]=Pk[id]);
+    steps.push({cap:k===1?`<b>Dash one square following your arrow</b>: ${arrows}. The circle stays behind.`:'<b>Dash one more square</b>, same direction.', move:700, hold:800, s:B({pos:next,aoe:circ(prev,who,1,0,k-1),tiles,orbs:k>2&&V.tanksOrbs?withOrbs(orbs,0):{}})});
+    tiles=reveal(prev,who,tiles);
+    const found=Object.values(tiles).some(t=>t.c==='blue');
+    steps.push({cap:found?`<b>Boom #${k}.</b> A <b>blue square</b> is revealed: that's the safe spot!`:`<b>Boom #${k}.</b> The squares under the circles reveal their colour. <b>Red = damage.</b>`, move:350, hold:1400, s:B({pos:next,aoe:circ(prev,who,0,1,k-1),tiles})});
+    pos=next;
+    if(k===2 && V.tanksOrbs && !V.noDiag){
+      steps.push({cap:'<b>The diagonal attack is coming</b>, from the top-right corner to the bottom-left one. Stay where you are: don\'t stand in it or cross it.', move:500, hold:1300, s:B({pos,tiles,diag:{o:1,f:0}})});
+      steps.push({cap:'<b>The diagonal hits.</b> Nobody is on it.', move:250, hold:1300, s:B({pos,tiles,diag:{o:1,f:1}})});
+      steps.push({cap:'<b>Diagonal over.</b>', move:400, hold:300, s:B({pos,tiles,diag:{o:0,f:0}})});
+    }
+    if(k===1 && V.cornerBalls){
+      const bc=(c,r)=>{const q=D(c,r);return {x:q[0],y:q[1]};};
+      const balls={a:bc(-0.85,-0.85),b:bc(5.85,-0.85),c:bc(5.85,5.85),d:bc(-0.85,5.85)};   // just outside the 4 corners
+      const grabber={a:'p1c',b:'p1a',c:'p1b',d:'p1h'};   // P1 #1–#4, the ones on the corners
+      const grab={...pos}; for(const q in grabber) grab[grabber[q]]=[balls[q].x,balls[q].y];
+      steps.push({cap:'<b>Balls appear just outside the 4 corners.</b>', move:500, hold:1100, s:B({pos,tiles,orbs:withOrbs(balls,1)})});
+      steps.push({cap:'<b>The corner players take them</b>: P1 #1, #2, #3 and #4.', move:1000, hold:400, s:B({pos:grab,tiles,orbs:withOrbs(balls,1)})});
+      steps.push({cap:'<b>Balls taken.</b> Back to your positions.', move:1000, hold:500, s:B({pos,tiles,orbs:withOrbs(balls,0)})});
+    }
+    if(k===2 && V.noSideOrbs){ who=ids.filter(id=>!isTank(id)); }
+    if(k===2 && !V.noSideOrbs){
+      steps.push({cap:'<b>Two orbs appear</b> on the sides of the arena: one at the front, one on the left.', move:500, hold:1100, s:B({pos,tiles,orbs:withOrbs(orbs,1)})});
+      const take={...pos,[V.orbTop]:[orbs.T.x,orbs.T.y],[V.orbLeft]:[orbs.L.x,orbs.L.y]};
+      steps.push({cap:V.tanksOrbs?'<b>The tanks go for the orbs</b>: P2 tank the front one, P1 tank the left one.':`<b>${pname(V.orbTop)} (${tag(V.orbTop)}) takes the front orb, ${pname(V.orbLeft)} (${tag(V.orbLeft)}) the left one.</b>`, move:1300, hold:400, s:B({pos:take,tiles,orbs:withOrbs(orbs,1)})});
+      steps.push({cap:'<b>Orbs taken.</b>', move:400, hold:400, s:B({pos:take,tiles,orbs:withOrbs(orbs,0)})});
+      pos=take;
+      if(V.tanksOrbs) who=ids.filter(id=>!isTank(id));
+    }
+    if(k<V.rounds){
+      steps.push({cap:V.tanksOrbs&&k>=2?'<b>The rest keep opening squares</b>: circles appear again on everyone still on the grid.':'<b>Circles appear again</b> on top of everyone.', move:400, hold:1000, s:B({pos,aoe:circ(pos,who,1,0,k),tiles})});
+    }
+  }
+  const bc=D(...V.blue), stack={};
+  ids.forEach((id,n)=>{const col=n%4,row=Math.floor(n/4); stack[id]=[bc[0]-5.4+col*3.6, bc[1]+3.6-row*3.6];});
+  steps.push({cap:'<b>Everyone hides inside the blue square.</b>', move:1600, hold:1400, s:B({pos:stack,tiles})});
+  if(!V.tanksOrbs) steps.push(
+    {cap:'<b>The diagonal attack is coming</b>, from the top-right corner to the bottom-left one. Anyone standing in it or crossing it dies.', move:500, hold:1300, s:B({pos:stack,tiles,diag:{o:1,f:0}})},
+    {cap:'<b>The diagonal hits.</b> Everyone is safe in the blue square.', move:250, hold:1400, s:B({pos:stack,tiles,diag:{o:1,f:1}})});
+  steps.push({cap:'<b>Back to your numbers.</b>', move:1400, hold:1000, s:base({pos:P0,grid:0,marks})});
+  steps.forEach(x=>x.s.ludra=0);   // Ludra is not in the arena during Bingo
+  return steps;
+}
+
+/* ---------- Phase 2 · Zikel: lanes & lasers ---------- */
+// lanes are written in screen terms (front at the top, x right, y DOWN); a = lane angle
+const ZLANES={ h:{a:0,name:'horizontal'}, d1:{a:-45,name:'top-right → bottom-left'}, v:{a:90,name:'vertical'}, d2:{a:45,name:'top-left → bottom-right'} };
+const ZW=7; // half width of a lane
+function lanePoly(a){ const r=a*Math.PI/180, u=[Math.cos(r),Math.sin(r)], n=[-u[1],u[0]], L=2*H;
+  return [[-u[0]*L+n[0]*ZW,-u[1]*L+n[1]*ZW],[u[0]*L+n[0]*ZW,u[1]*L+n[1]*ZW],[u[0]*L-n[0]*ZW,u[1]*L-n[1]*ZW],[-u[0]*L-n[0]*ZW,-u[1]*L-n[1]*ZW]]; }
+// lasers: o = emitter edge midpoint, t = along the edge, n = direction they travel (screen terms)
+const LASER_EDGES={ top:{o:[0,-H],t:[1,0],n:[0,1],name:'top → bottom'}, right:{o:[H,0],t:[0,1],n:[-1,0],name:'right → left'},
+  left:{o:[-H,0],t:[0,1],n:[1,0],name:'left → right'}, bottom:{o:[0,H],t:[1,0],n:[0,-1],name:'bottom → top'} };
+function mix(a,b,t){ const h=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16)); const A=h(a),B=h(b);
+  return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join(''); }
+function sceneZikel(mode){
+  const left=(mode||'L')==='L';
+  const ids=roster().map(r=>r.id);
+  // group spot inside each lane, on the chosen side of the middle (screen terms)
+  const spot = left
+    // each spot is inside the purple line AND in the gap between two lasers (beams every 18, gaps at ±9 / ±27)
+    // left:  bottom → middle (horizontal) → back down (diagonal) → middle vertical → right (diagonal)
+    // right: bottom → centre (horizontal) → higher (diagonal) → middle (vertical) → top-left (diagonal)
+    ? {start:[-27,32], h:[-27,0], d1:[-27,27], v:[0,27], d2:[27,27]}
+    : {start:[27,32],  h:[27,0],  d1:[27,-27], v:[0,-27], d2:[-27,-27]};
+  // one player shown: where you stand (screen terms → arena coords)
+  const group=(k)=>{ const [x,y]=spot[k], P={}; ids.forEach(id=>P[id]=[x,-y]); return P; };
+  const order=[['h','top'],['d1','right'],['v','left'],['d2','bottom']];
+  const LP=[0,-(H+10.5)];   // Ludra sits at the bottom edge, facing the arena
+  const Z=o=>base(Object.assign({ludra:1,lpos:LP,face:0},o));
+  const side=left?'left':'right';
+  const steps=[{cap:`<b>Phase 2 · Zikel.</b> Ludra is at the bottom edge. Stay <b>${side} of the middle</b>.`, move:1200, hold:1000, s:Z({pos:group('start')})}];
+  let pos=group('start'), lanes={};
+  order.forEach(([ln,edge],i)=>{
+    const prevLanes={...lanes};
+    steps.push({cap:`<b>Line ${i+1}: ${ZLANES[ln].name}.</b> It appears <b>orange</b>: <b>nobody can be inside it</b>, or you die. Stay out.`, move:600, hold:1300,
+      s:Z({pos, lanes:{...prevLanes,[ln]:{o:1,c:0}}})});
+    lanes={[ln]:{o:1,c:1}};
+    const np=group(ln);
+    steps.push({cap:`<b>It turns purple.</b> Move <b>slowly</b> into it, staying ${side} of the middle.`, move:1700, hold:600,
+      s:Z({pos:np, lanes:{...Object.fromEntries(Object.keys(prevLanes).map(k=>[k,{o:0,c:1}])),[ln]:{o:1,c:1}}})});
+    pos=np;
+    steps.push({cap:`<b>Lasers ${i+1}: ${LASER_EDGES[edge].name}.</b> <b>Lasers kill</b>: stand <b>between two beams</b>, inside the purple line.`, move:1500, hold:500,
+      s:Z({pos, lanes, laser:{e:edge,p:1,o:1}})});
+    steps.push({cap:'<b>Lasers gone.</b>', move:300, hold:200, s:Z({pos, lanes, laser:{e:edge,p:1,o:0}})});
+  });
+  steps.push({cap:'<b>Last line fades.</b> Sequence: line → lasers, four times.', move:700, hold:1200, s:Z({pos, lanes:{d2:{o:0,c:1}}})});
+  return steps;
+}
+
+/* ---------- drawing helpers ---------- */
+const NS='http://www.w3.org/2000/svg';
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+// display: default = front (head) at the TOP, P1 on the left; 'Turn 180°' rotates the view
+const SX=()=>cfg.rot?-1:1, SY=()=>cfg.rot?1:-1;
+const T = (x,y)=> [SX()*x, SY()*y];
+
+function hexPts(r){let s=[];for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;s.push((Math.cos(a)*r).toFixed(2)+','+(Math.sin(a)*r).toFixed(2));}return s.join(' ');}
+function tokenShape(g, role, party, tag, r=3.3){
+  const ring = party===1?COL.p1:COL.p2;
+  const fill = COL[role];
+  el('circle',{r:r+1.3,fill:'none',stroke:ring,'stroke-width':1.1,opacity:.95},g);
+  if(role==='tank') el('path',{d:`M${-r*1.1},${-r*.85} L${r*1.1},${-r*.85} Q${r*.8},${r*.45} 0,${r*1.25} Q${-r*.8},${r*.45} ${-r*1.1},${-r*.85} Z`,fill,stroke:'#fff','stroke-width':.5,'stroke-linejoin':'round'},g);
+  else if(role==='cleric') el('rect',{x:-r*.85,y:-r*.85,width:r*1.7,height:r*1.7,transform:'rotate(45)',fill,stroke:'#fff','stroke-width':.5},g);
+  else if(role==='chanter') el('polygon',{points:hexPts(r*1.05),fill,stroke:'#fff','stroke-width':.5},g);
+  else el('circle',{r:r,fill,stroke:'#fff','stroke-width':.5},g);
+  return;
+}
+
+/* ---------- Scene player ---------- */
+class Player{
+  constructor(container, title, num, makeSteps, opts={}){
+    this.makeSteps=makeSteps; this.opts=opts;
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML=`<h2><span class="num">${num}</span>${title}</h2>`;
+    if(opts.tabs){
+      const seg=document.createElement('div'); seg.className='seg';
+      opts.tabs.forEach(([v,l])=>{const b=document.createElement('button');b.textContent=l;b.dataset.v=v;seg.appendChild(b);});
+      seg.onclick=e=>{const v=e.target.dataset.v;if(!v)return;this.mode=v;this.syncTabs();this.rebuild(true);};
+      card.querySelector('h2').appendChild(seg); this.seg=seg; this.mode=opts.tabs[0][0];
+    }
+    const stage=document.createElement('div'); stage.className='stage'; card.appendChild(stage);
+    this.svg=el('svg',{viewBox:`${-V} ${-V} ${2*V} ${2*V}`}); stage.appendChild(this.svg);
+    const side=document.createElement('div'); side.className='side'; card.appendChild(side);
+    this.steps=document.createElement('div'); this.steps.className='steps'; side.appendChild(this.steps);
+    this.cap=document.createElement('div'); this.cap.className='cap'; side.appendChild(this.cap);
+    this.notes=document.createElement('div'); this.notes.className='notes'; side.appendChild(this.notes);
+    container.appendChild(card); this.card=card; this.title=title; this.phase=opts.phase||1;
+    this.playing=true; this.idx=0;
+    this.buildStatic();
+    this.syncTabs();
+    this.rebuild(true);
+    requestAnimationFrame(t=>this.tick(t));
+  }
+  syncTabs(){ if(this.seg) [...this.seg.children].forEach(b=>b.classList.toggle('on',b.dataset.v===this.mode)); }
+  buildStatic(){
+    const s=this.svg;
+    const defs=el('defs',{},s);
+    const rg=el('radialGradient',{id:'floor'+this.uid(),cx:'50%',cy:'50%',r:'60%'},defs);
+    el('stop',{offset:'0%','stop-color':'#3a2178'},rg); el('stop',{offset:'100%','stop-color':'#170c38'},rg);
+    const gl=el('filter',{id:'glow'+this._uid,x:'-50%',y:'-50%',width:'200%',height:'200%'},defs);
+    el('feGaussianBlur',{stdDeviation:1.2,result:'b'},gl);
+    const m=el('feMerge',{},gl); el('feMergeNode',{in:'b'},m); el('feMergeNode',{in:'SourceGraphic'},m);
+    el('rect',{x:-H,y:-H,width:2*H,height:2*H,rx:3,fill:`url(#floor${this._uid})`,stroke:'#8a6be0','stroke-width':.6},s);
+    // faint rings
+    if(this.phase!==2) for(const r of [15,30,44]) el('circle',{r,fill:'none',stroke:'#6c4fc0','stroke-width':.25,'stroke-dasharray':'1 1.5',opacity:.6},s);
+    this.gGrid=el('g',{},s); this.cells=[]; this.gMarks=null;
+    const CW=2*H/6;
+    for(let i=0;i<6;i++)for(let j=0;j<6;j++){ const r=el('rect',{width:CW-.8,height:CW-.8,rx:1,fill:'#d6b4ff',opacity:0},this.gGrid); this.cells.push({i,j,r}); }
+    const cp=el('clipPath',{id:'sq'+this._uid},s.querySelector('defs')); el('rect',{x:-H,y:-H,width:2*H,height:2*H,rx:3},cp);
+    this.diagP=el('path',{fill:'#ff3b55',opacity:0,stroke:'#ffd0d6','stroke-width':.6,'stroke-dasharray':'2 1.4','clip-path':`url(#sq${this._uid})`},s);
+    this.gZones=el('g',{},s);
+    this.outside=el('path',{fill:'#8e3dff','fill-rule':'evenodd',opacity:0},this.gZones);
+    this.inside=el('circle',{r:CIRCLE_R,fill:'#ff3b55',opacity:0},this.gZones);
+    this.circleEdge=el('circle',{r:CIRCLE_R,fill:'none',stroke:'#e9d8ff','stroke-width':.7,opacity:0},this.gZones);
+    this.zinT=el('text',{'text-anchor':'middle','font-size':3,'font-weight':800,fill:'#fff',opacity:.85,'font-family':'Nunito,sans-serif','letter-spacing':'.3'},s);
+    this.zoutT=el('text',{'text-anchor':'middle','font-size':3,'font-weight':800,fill:'#fff',opacity:.85,'font-family':'Nunito,sans-serif','letter-spacing':'.3'},s);
+    // front/back labels
+    this.frontT=el('text',{'text-anchor':'middle','font-size':2.8,'font-weight':800,fill:'#cdb8ff','font-family':'Nunito,sans-serif'},s);
+    this.backT=el('text',{'text-anchor':'middle','font-size':2.8,'font-weight':800,fill:'#cdb8ff','font-family':'Nunito,sans-serif'},s);
+    this.p1T=el('text',{'text-anchor':'middle','font-size':2.8,'font-weight':800,fill:COL.p1,'font-family':'Nunito,sans-serif'},s);
+    this.p2T=el('text',{'text-anchor':'middle','font-size':2.8,'font-weight':800,fill:COL.p2,'font-family':'Nunito,sans-serif'},s);
+    // Ludra
+    this.gCone=el('g',{},s);
+    this.coneP=el('path',{fill:'#ff8a1f',opacity:0,stroke:'#ffb066','stroke-width':.6},this.gCone);
+    this.gSide=el('g',{},s);   // party side markers on the square borders
+    this.gL=el('g',{},s);
+    this.lines=el('g',{},s);
+    this.gOrbs=el('g',{},s);
+    this.gFx=el('g',{},s);
+    this.gLanes=el('g',{'clip-path':`url(#sq${this._uid})`},s); this.laneEls={};
+    const mk=el('mask',{id:'lm'+this._uid,maskUnits:'userSpaceOnUse',x:-V,y:-V,width:2*V,height:2*V},s.querySelector('defs'));
+    el('rect',{x:-V,y:-V,width:2*V,height:2*V,fill:'#fff'},mk); this.maskG=el('g',{},mk);
+    this.gLaser=el('g',{'clip-path':`url(#sq${this._uid})`},s);   // lasers are drawn over the lines: they kill everywhere
+    this.gTicks=el('g',{},s);
+    this.gAoe=el('g',{},s);
+    this.gTok=el('g',{},s);
+    this.gTor=el('g',{},s);
+    this.gEye=el('g',{opacity:0},s);
+    el('ellipse',{rx:4.6,ry:2.8,fill:'#fff3e0',stroke:'#ff6a00','stroke-width':.9},this.gEye);
+    el('circle',{r:1.7,fill:'#ff6a00'},this.gEye); el('circle',{r:.7,fill:'#2a1650'},this.gEye);
+  }
+  uid(){ this._uid=this._uid||Math.random().toString(36).slice(2,8); return this._uid; }
+  drawLudra(){
+    const g=this.gL; g.innerHTML='';
+    this.gHead=el('g',{},g);
+    el('path',{d:'M0,6 L-16,26 Q0,32 16,26 Z',fill:COL.ludra,opacity:.16},this.gHead);
+    el('path',{d:'M-2.2,9.8 L2.2,9.8 L0,12.6 Z',fill:'#fff'},this.gHead);
+    el('rect',{x:-7,y:-7,width:14,height:14,transform:'rotate(45)',fill:'#7c3cf0',stroke:'#f0e4ff','stroke-width':.9,filter:`url(#glow${this._uid})`},g);
+    el('rect',{x:-5.2,y:-5.2,width:10.4,height:10.4,transform:'rotate(45)',fill:'#9a5cff',opacity:.6},g);
+    const t=el('text',{y:.3,'text-anchor':'middle','dominant-baseline':'middle','font-size':3.2,'font-family':'Cinzel,serif','font-weight':800,fill:'#fff'},g); t.textContent='LUDRA';
+    this.headT=el('text',{'text-anchor':'middle','dominant-baseline':'middle','font-size':1.8,'font-weight':800,fill:'#fff',opacity:.85,'font-family':'Nunito,sans-serif'},g); this.headT.textContent='HEAD';
+  }
+  setFace(face){
+    const f=face*Math.PI/180, dx=SX()*-Math.sin(f), dy=SY()*Math.cos(f);
+    const a=Math.atan2(-dx,dy)*180/Math.PI, r=a*Math.PI/180;
+    this.gHead.setAttribute('transform',`rotate(${a.toFixed(2)})`);
+    this.headT.setAttribute('x',(-Math.sin(r)*5).toFixed(2));
+    this.headT.setAttribute('y',(Math.cos(r)*5+.2).toFixed(2));
+  }
+  rebuild(reset){
+    this.list=this.makeSteps(this.mode);
+    this.drawLudra();
+    this.gSide.innerHTML='';
+    if(this.phase!==2) for(const [x,c] of [[-H,COL.p1],[H,COL.p2]]){ const [dx,dy]=T(x,0);
+      el('rect',{x:-3,y:-3,width:6,height:6,transform:`translate(${dx},${dy}) rotate(45)`,fill:c,stroke:'#fff','stroke-width':.6},this.gSide); }
+    // labels
+    const frontTop=SY()<0, fy=frontTop?-H-13:H+15, by=frontTop?H+15:-H-13;
+    this.frontT.setAttribute('x',0);this.frontT.setAttribute('y',fy);this.frontT.textContent=frontTop?'▲ FRONT':'▼ FRONT';
+    this.backT.setAttribute('x',0);this.backT.setAttribute('y',by);this.backT.textContent=frontTop?'▼ BEHIND':'▲ BEHIND';
+    const p1x=SX()*-20;
+    this.p1T.setAttribute('x',p1x);this.p1T.setAttribute('y',fy);this.p1T.textContent=p1x<0?'◀ P1 SIDE':'P1 SIDE ▶';
+    this.p2T.setAttribute('x',-p1x);this.p2T.setAttribute('y',fy);this.p2T.textContent=p1x<0?'P2 SIDE ▶':'◀ P2 SIDE';
+    // tokens
+    this.gTok.innerHTML=''; this.tok={}; this.gTor.innerHTML=''; this.torEls={};
+    for(const p of roster()){
+      if(this.opts.solo && p.id!==this.opts.solo) continue;
+      const g=el('g',{},this.gTok); tokenShape(g,p.role,p.party,p.tag);
+      const lab=this.opts.labels?this.opts.labels(this.mode)[p.id]:null;
+      if(lab!=null){ const t=el('text',{y:p.role==='tank'?-.2:.25,'text-anchor':'middle','dominant-baseline':'middle','font-size':3.6,'font-weight':800,fill:'#2a1650','font-family':'Nunito,sans-serif'},g); t.textContent=lab; }
+      const hurt=el('circle',{r:5,fill:'none',stroke:'#ff3b55','stroke-width':1,opacity:0},g);
+      this.tok[p.id]={g,hurt};
+    }
+    // pills
+    this.steps.innerHTML='';
+    this.list.forEach((st,i)=>{const b=document.createElement('button');b.className='pill';b.textContent=i+1;b.title=st.cap.replace(/<[^>]+>/g,'');b.onclick=()=>this.jump(i);this.steps.appendChild(b);});
+    const pb=document.createElement('button'); pb.className='btn ghost play'; this.playBtn=pb;
+    pb.onclick=()=>{this.playing=!this.playing;this.updPlay();if(this.playing){this.t0=performance.now()-this.elapsed;}};
+    this.steps.appendChild(pb); this.updPlay();
+    this.notes.innerHTML=this.opts.notes?this.opts.notes(this.mode):'';
+    if(reset){ this.cur=JSON.parse(JSON.stringify(this.list[0].s)); this.from=this.cur; this.goto(0); }
+    else { this.goto(Math.min(this.idx,this.list.length-1)); }
+  }
+  updPlay(){this.playBtn.textContent=this.playing?'❚❚ Pause':'▶ Play';}
+  jump(i){ this.goto(i); this.playing=false; this.transit=true; this.updPlay(); }
+  goto(i){
+    this.idx=i; this.from=JSON.parse(JSON.stringify(this.cur)); this.to=this.list[i].s;
+    this.t0=performance.now(); this.elapsed=0;
+    this.cap.innerHTML=this.list[i].cap;
+    [...this.steps.querySelectorAll('.pill')].forEach((b,j)=>b.classList.toggle('on',j===i));
+    this.applyFx(this.to.fx||[]);
+  }
+  applyFx(fx){
+    this.inside.classList.remove('flash'); void this.inside.getBBox;
+    if(fx.includes('flash')){ setTimeout(()=>this.inside.classList.add('flash'),10); }
+    this.fx=fx;
+    this.gFx.innerHTML='';
+    if(fx.includes('heal')){
+      const c=T(0,-57);
+      for(let k=0;k<3;k++){
+        const ring=el('circle',{cx:c[0],cy:c[1],r:2,fill:'none',stroke:COL.cleric,'stroke-width':.8},this.gFx);
+        el('animate',{attributeName:'r',from:3,to:17,dur:'1.8s',begin:`${k*0.6}s`,repeatCount:'indefinite'},ring);
+        el('animate',{attributeName:'opacity',from:.9,to:0,dur:'1.8s',begin:`${k*0.6}s`,repeatCount:'indefinite'},ring);
+      }
+      const pl=el('text',{x:c[0]+33,y:c[1]+1,'text-anchor':'middle','font-size':3,'font-weight':800,fill:COL.cleric,'font-family':'Nunito,sans-serif'},this.gFx);
+      pl.textContent='+ HEAL';
+    }
+  }
+  tick(now){
+    const st=this.list[this.idx], sp=cfg.speed;
+    if(this.playing||this.transit){ this.elapsed=now-this.t0; }
+    if(!this.playing&&this.transit&&this.elapsed>=st.move*sp){ this.transit=false; this.elapsed=st.move*sp; }
+    const mv=st.move*sp, total=(st.move+st.hold)*sp;
+    let k=Math.min(1,this.elapsed/Math.max(1,mv)); k=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    this.render(this.lerp(this.from,this.to,k));
+    if(this.playing && this.elapsed>=total){
+      this.cur=JSON.parse(JSON.stringify(this.to));
+      this.goto((this.idx+1)%this.list.length);
+    } else {
+      this.cur=this.lerp(this.from,this.to,k);
+    }
+    requestAnimationFrame(t=>this.tick(t));
+  }
+  lerp(a,b,k){
+    const L=(x,y)=>x+(y-x)*k;
+    const pos={};
+    for(const id in b.pos){const p=a.pos[id]||b.pos[id],q=b.pos[id];pos[id]=[L(p[0],q[0]),L(p[1],q[1])];}
+    const orbs={};
+    const ids=new Set([...Object.keys(a.orbs||{}),...Object.keys(b.orbs||{})]);
+    for(const id of ids){const p=(a.orbs||{})[id],q=(b.orbs||{})[id];const src=q||p;
+      orbs[id]={x:src.x,y:src.y,red:src.red,o:L(p?p.o:0,q?q.o:0)};}
+    const tor={};
+    const tids=new Set([...Object.keys(a.tor||{}),...Object.keys(b.tor||{})]);
+    for(const id of tids){const p=(a.tor||{})[id],q=(b.tor||{})[id];
+      const P=p||{...q,o:0},Q=q||{...p,o:0};
+      tor[id]={x:L(P.x,Q.x),y:L(P.y,Q.y),o:L(P.o,Q.o)};}
+    return {pos,orbs,tor,r:L(a.r,b.r),purple:L(a.purple,b.purple),red:L(a.red,b.red),lines:L(a.lines||0,b.lines||0),
+      zin:b.zin,zout:b.zout,fx:b.fx,face:L(a.face||0,b.face||0),
+      cone:{a:(b.cone||{}).a??180,o:L((a.cone||{}).o||0,(b.cone||{}).o||0),f:L((a.cone||{}).f||0,(b.cone||{}).f||0)},
+      eye:L(a.eye||0,b.eye||0),eyeId:b.eyeId||a.eyeId,
+      grid:L(a.grid||0,b.grid||0), ludra:L(a.ludra??1,b.ludra??1),
+      lpos:[L((a.lpos||[0,0])[0],(b.lpos||[0,0])[0]),L((a.lpos||[0,0])[1],(b.lpos||[0,0])[1])],
+      lanes:(()=>{const o={};const ks=new Set([...Object.keys(a.lanes||{}),...Object.keys(b.lanes||{})]);
+        for(const k of ks){const p=(a.lanes||{})[k],q=(b.lanes||{})[k];const P=p||{...q,o:0},Q=q||{...p,o:0};o[k]={o:L(P.o,Q.o),c:L(P.c,Q.c)};}return o;})(),
+      laser:(()=>{const p=a.laser||{o:0,p:0},q=b.laser||{o:0,p:0};const same=p.e===q.e;
+        return {e:q.o>0?q.e:p.e,o:L(p.o||0,q.o||0),p:(same&&(p.o||0)>.5)?L(p.p||0,q.p||0):(q.p||0)*k};})(), marks:(b.marks&&b.marks.length?b.marks:a.marks)||[],
+      tiles:(()=>{const o={};const ks=new Set([...Object.keys(a.tiles||{}),...Object.keys(b.tiles||{})]);
+        for(const k of ks){const p=(a.tiles||{})[k],q=(b.tiles||{})[k];o[k]={c:(q||p).c,o:L(p?p.o:0,q?q.o:0)};}return o;})(),
+      aoe:(()=>{const o={};const ks=new Set([...Object.keys(a.aoe||{}),...Object.keys(b.aoe||{})]);
+        for(const k of ks){const p=(a.aoe||{})[k],q=(b.aoe||{})[k];const P=p||{...q,o:0,boom:0},Q=q||{...p,o:0,boom:0};
+          o[k]={x:L(P.x,Q.x),y:L(P.y,Q.y),o:L(P.o,Q.o),boom:L(P.boom||0,Q.boom||0)};}return o;})(),
+      diag:{o:L((a.diag||{}).o||0,(b.diag||{}).o||0),f:L((a.diag||{}).f||0,(b.diag||{}).f||0)}};
+  }
+  render(S){
+    this.setFace(S.face||0);
+    this.gL.setAttribute('opacity',(S.ludra??1).toFixed(3));
+    { const lp=S.lpos||[0,0]; const [lx,ly]=T(lp[0],lp[1]); this.gL.setAttribute('transform',`translate(${lx.toFixed(2)},${ly.toFixed(2)})`); }
+    // Zikel lanes (orange → purple) and lasers
+    { const lanes=S.lanes||{};
+      for(const k in this.laneEls){ if(!lanes[k]){ this.laneEls[k].remove(); delete this.laneEls[k]; } }
+      this.maskG.innerHTML='';
+      for(const k in lanes){ const l=lanes[k], g=ZLANES[k];
+        const poly=lanePoly(g.a).map(q=>T(q[0],-q[1]));
+        const d='M'+poly.map(q=>q[0].toFixed(2)+','+q[1].toFixed(2)).join(' L')+' Z';
+        let e=this.laneEls[k]; if(!e){ e=el('path',{'stroke-width':.8},this.gLanes); this.laneEls[k]=e; }
+        const c=l.c, col=mix('#ff8a1f','#b061ff',c), st=mix('#ffc27a','#e2c2ff',c);
+        e.setAttribute('d',d); e.setAttribute('fill',col); e.setAttribute('stroke',st);
+        e.setAttribute('fill-opacity',(l.o*(.32+.2*c)).toFixed(3)); e.setAttribute('stroke-opacity',l.o.toFixed(3));
+        if(c>.5 && l.o>.5) el('path',{d,fill:'#000'},this.maskG);
+      }
+      const z=S.laser||{o:0}; this.gLaser.innerHTML=''; this.gTicks.innerHTML='';
+      if(z.o>.01){ const E=LASER_EDGES[z.e];
+        for(const off of [-36,-18,0,18,36]){
+          const s0=[E.o[0]+E.t[0]*off, E.o[1]+E.t[1]*off], s1=[s0[0]+E.n[0]*2*H*z.p, s0[1]+E.n[1]*2*H*z.p];
+          const a=T(s0[0],-s0[1]), b=T(s1[0],-s1[1]);
+          el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'#ff3d7f','stroke-width':4,'stroke-linecap':'round',opacity:(z.o*.3).toFixed(3)},this.gLaser);
+          el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'#ffd1e3','stroke-width':1.2,'stroke-linecap':'round',opacity:z.o},this.gLaser);
+          const t0=T(s0[0]-E.n[0]*3.5,-(s0[1]-E.n[1]*3.5)), t1=T(s0[0],-s0[1]);
+          el('line',{x1:t0[0],y1:t0[1],x2:t1[0],y2:t1[1],stroke:'#ff9ac0','stroke-width':1.4,'stroke-linecap':'round',opacity:z.o},this.gTicks);
+        }
+      }
+    }
+    // zones
+    const r=S.r;
+    this.outside.setAttribute('d',`M${-V},${-V}H${V}V${V}H${-V}Z M${r},0 A${r},${r} 0 1,0 ${-r},0 A${r},${r} 0 1,0 ${r},0 Z`);
+    this.outside.setAttribute('opacity',(S.purple*.55).toFixed(3));
+    this.inside.setAttribute('r',r); this.inside.setAttribute('opacity',(S.red*.42).toFixed(3));
+    this.circleEdge.setAttribute('r',r); this.circleEdge.setAttribute('opacity',r<NOCIRCLE-1?Math.min(1,(NOCIRCLE-r)/20):0);
+    const showZ=r<NOCIRCLE-5;
+    this.zinT.setAttribute('x',0); this.zinT.setAttribute('y',T(0,21)[1]+1);
+    this.zinT.textContent=showZ?S.zin:''; this.zinT.setAttribute('fill',S.zin==='DANGER'?'#ffd0d6':'#e6fff0');
+    const zx=r>40?57:40; this.zoutT.setAttribute('x',zx); this.zoutT.setAttribute('y',0);
+    this.zoutT.textContent=showZ?S.zout:''; this.zoutT.setAttribute('transform',`rotate(90 ${zx} 0)`);
+    // bingo grid + revealed tiles
+    { const CW=2*H/6;
+      for(const c of this.cells){ const cx=-H+CW*(c.i+.5), cy=-H+CW*(c.j+.5); const [x,y]=T(cx,cy);
+        c.r.setAttribute('x',(x-CW/2+.4).toFixed(2)); c.r.setAttribute('y',(y-CW/2+.4).toFixed(2));
+        const t=(S.tiles||{})[c.i+','+c.j];
+        if(t && t.o>.01){ c.r.setAttribute('fill',t.c==='blue'?'#3aa8ff':'#ff4757'); c.r.setAttribute('opacity',(.2+.5*t.o).toFixed(3)); }
+        else { c.r.setAttribute('fill','#d6b4ff'); c.r.setAttribute('opacity',((S.grid||0)*.28).toFixed(3)); }
+      }
+      if(!this.gMarks){ this.gMarks=el('g',{},this.gGrid); }
+      this.gMarks.innerHTML='';
+      for(const m of (S.marks||[])){ const [x,y]=T(m.x,m.y);
+        const g=el('g',{transform:`translate(${x.toFixed(2)},${y.toFixed(2)})`,opacity:.9},this.gMarks);
+        el('circle',{r:3.6,fill:'none',stroke:'#fff','stroke-width':.7},g);
+        const t=el('text',{y:.3,'text-anchor':'middle','dominant-baseline':'middle','font-size':3.9,'font-weight':800,fill:'#fff','font-family':'Cinzel,serif'},g); t.textContent=m.l; }
+      // diagonal attack: top-right corner → bottom-left corner (as seen with front at the top)
+      const d=S.diag||{o:0,f:0};
+      if(d.o>.01){ const w=5.5; const pts=[[-H,-H],[H,H]];
+        const n=[-1/Math.SQRT2,1/Math.SQRT2];
+        const poly=[[pts[0][0]+n[0]*w,pts[0][1]+n[1]*w],[pts[1][0]+n[0]*w,pts[1][1]+n[1]*w],[pts[1][0]-n[0]*w,pts[1][1]-n[1]*w],[pts[0][0]-n[0]*w,pts[0][1]-n[1]*w]].map(q=>T(q[0],q[1]));
+        this.diagP.setAttribute('d','M'+poly.map(q=>q[0].toFixed(2)+','+q[1].toFixed(2)).join(' L')+' Z');
+        this.diagP.setAttribute('opacity',(d.o*(.25+.6*d.f)).toFixed(3));
+      } else this.diagP.setAttribute('opacity',0);
+      // player circles
+      this.gAoe.innerHTML='';
+      for(const k in (S.aoe||{})){ const c=S.aoe[k]; if(c.o<.01) continue; const [x,y]=T(c.x,c.y);
+        el('circle',{cx:x,cy:y,r:(7.5+c.boom*3).toFixed(2),fill:c.boom>.3?'#fff1de':'#ff9a2e','fill-opacity':(.2+c.boom*.5).toFixed(3),stroke:'#ffb066','stroke-width':.8,opacity:c.o.toFixed(3)},this.gAoe);
+      }
+    }
+    // eye-phase cone (from Ludra towards the marked player) + eye marker
+    { const c=S.cone||{o:0}; 
+      if(c.o>.01){ const ar=c.a*Math.PI/180; const d=T(Math.cos(ar),Math.sin(ar)); const da=Math.atan2(d[1],d[0]);
+        const R0=46, h=50*Math.PI/180, x1=Math.cos(da-h)*R0, y1=Math.sin(da-h)*R0, x2=Math.cos(da+h)*R0, y2=Math.sin(da+h)*R0;
+        this.coneP.setAttribute('d',`M0,0 L${x1.toFixed(2)},${y1.toFixed(2)} A${R0},${R0} 0 0,1 ${x2.toFixed(2)},${y2.toFixed(2)} Z`);
+        this.coneP.setAttribute('opacity',(c.o*(.35+.45*c.f)).toFixed(3));
+        this.coneP.setAttribute('fill',c.f>.5?'#ff5a00':'#ff8a1f');
+      } else this.coneP.setAttribute('opacity',0);
+      if(S.eyeId && S.pos[S.eyeId] && S.eye>.01){ const [x,y]=T(...S.pos[S.eyeId]);
+        this.gEye.setAttribute('transform',`translate(${x.toFixed(2)},${y.toFixed(2)})`); this.gEye.setAttribute('opacity',S.eye.toFixed(3));
+      } else this.gEye.setAttribute('opacity',0);
+    }
+    // tornadoes
+    if(!this.torEls) this.torEls={};
+    for(const id in this.torEls){ if(!(S.tor||{})[id]){ this.torEls[id].remove(); delete this.torEls[id]; } }
+    for(const id in (S.tor||{})){const t=S.tor[id]; let g=this.torEls[id];
+      if(!g){ g=el('g',{},this.gTor); this.torEls[id]=g;
+        el('circle',{r:9,fill:'#a050ff',opacity:.22},g);
+        const sp=el('g',{class:'spin'},g);
+        el('circle',{r:9,fill:'none',opacity:0},sp);
+        el('path',{d:'M-8.4,0 A8.4,8.4 0 0,1 6,-5.9',fill:'none',stroke:'#e0c2ff','stroke-width':1.3,'stroke-linecap':'round'},sp);
+        el('path',{d:'M8.4,0 A8.4,8.4 0 0,1 -6,5.9',fill:'none',stroke:'#e0c2ff','stroke-width':1.3,'stroke-linecap':'round'},sp);
+        el('path',{d:'M0,-6.6 A6.6,6.6 0 0,1 6.6,0',fill:'none',stroke:'#b36bff','stroke-width':1,'stroke-linecap':'round'},sp);
+        el('path',{d:'M0,6.6 A6.6,6.6 0 0,1 -6.6,0',fill:'none',stroke:'#b36bff','stroke-width':1,'stroke-linecap':'round'},sp);
+      }
+      const [x,y]=T(t.x,t.y); g.setAttribute('transform',`translate(${x.toFixed(2)},${y.toFixed(2)})`); g.setAttribute('opacity',t.o.toFixed(3));
+    }
+    // orbs
+    this.gOrbs.innerHTML='';
+    for(const id in S.orbs){const o=S.orbs[id]; if(o.o<.01)continue; const [x,y]=T(o.x,o.y);
+      const g=el('g',{transform:`translate(${x},${y})`,opacity:o.o},this.gOrbs);
+      const c=o.red?COL.red:COL.orb;
+      el('circle',{r:4.6,fill:c,opacity:.22},g);
+      el('circle',{r:2.6,fill:c,stroke:'#fff','stroke-width':.6,class:'orbcore',filter:`url(#glow${this._uid})`},g);
+    }
+    // assignment lines
+    this.lines.innerHTML='';
+    if(S.lines>.01 && this.opts.assign){
+      const A=this.opts.assign(this.mode);
+      for(const k in A){const o=S.orbs[k]; const p=S.pos[A[k]]; if(!o||!p)continue;
+        const [x1,y1]=T(p[0],p[1]),[x2,y2]=T(o.x,o.y);
+        el('line',{x1,y1,x2,y2,stroke:o.red?COL.red:COL.orb,'stroke-width':.7,'stroke-dasharray':'1.6 1.2',opacity:S.lines},this.lines);
+      }
+    }
+    // tokens
+    const hurtIn=(S.fx||[]).includes('hurt'), hurtOut=(S.fx||[]).includes('hurtOut');
+    for(const id in this.tok){const p=S.pos[id]; if(!p)continue; const [x,y]=T(p[0],p[1]);
+      this.tok[id].g.setAttribute('transform',`translate(${x.toFixed(2)},${y.toFixed(2)})`);
+      const h=this.tok[id].hurt; const on=hurtIn||hurtOut;
+      if(on && !h.classList.contains('hurt')) h.classList.add('hurt'); if(!on) h.classList.remove('hurt');
+    }
+  }
+}
+
+/* ---------- legend ---------- */
+function legend(){
+  const L=document.getElementById('legend'); L.innerHTML='';
+  const item=(role,party,tag,label)=>{
+    const d=document.createElement('div'); d.className='leg';
+    const s=el('svg',{viewBox:'-6 -6 12 12'}); d.appendChild(s); tokenShape(el('g',{},s),role,party,tag,3.2);
+    d.appendChild(document.createTextNode(label)); L.appendChild(d);
+  };
+  item('tank',0,'T','Tank'); item('cleric',0,'Cl','Cleric'); item('chanter',0,'Ch','Chanter'); item('dps',0,'R','DPS');
+  const ring=(c,label)=>{const d=document.createElement('div');d.className='leg';d.innerHTML=`<svg viewBox="-6 -6 12 12"><circle r="4.4" fill="none" stroke="${c}" stroke-width="1.6"/></svg>${label}`;L.appendChild(d);};
+  ring(COL.p1,'Party 1'); ring(COL.p2,'Party 2');
+  const orb=(c,label)=>{const d=document.createElement('div');d.className='leg';d.innerHTML=`<svg viewBox="-6 -6 12 12"><circle r="3.4" fill="${c}" stroke="#fff" stroke-width=".8"/></svg>${label}`;L.appendChild(d);};
+  orb(COL.red,'Red orb (2nd tank)'); orb(COL.orb,'Blue orb (ranged)');
+  {const d=document.createElement('div');d.className='leg';d.innerHTML=`<svg viewBox="-7 -7 14 14"><circle r="6.2" fill="#a050ff" opacity=".35"/><path d="M-5,0 A5,5 0 0,1 5,0" fill="none" stroke="#d9b3ff" stroke-width="1.2"/><path d="M3.4,0 A3.4,3.4 0 0,1 -3.4,0" fill="none" stroke="#c58cff" stroke-width="1.1"/></svg>Tornado`;L.appendChild(d);}
+  // party-0 ring fix: neutral
+  L.querySelectorAll('svg').forEach((s,i)=>{if(i<4){const c=s.querySelector('circle');if(c&&c.getAttribute('fill')==='none')c.setAttribute('stroke','#cbbcf5');}});
+}
+
+/* ---------- notes ---------- */
+function startNotes(){
+  const d=p=>cfg['p'+p]==='RR'?'2 ranged: one in the back corner, one in the front corner of your side':'Melee next to your chanter (behind Ludra), ranged in the back corner of your side';
+  return `<ul>
+    <li><b>Pull</b>: we enter from the bottom with Ludra looking at us and the tank already on the far side. The tank pulls, Ludra turns, and the group comes in on his back.</li>
+    <li><b>Tanks</b>: in front of the head, each slightly towards their own side.</li>
+    <li><b>Clerics</b>: centre of their party's side.</li>
+    <li><b>Chanters</b>: behind Ludra, on their side.</li>
+    <li><span class="p1tag"><b>P1 DPS</b></span>: ${d(1)}.</li>
+    <li><span class="p2tag"><b>P2 DPS</b></span>: ${d(2)}.</li></ul>`;
+}
+function orbNotes(mode){
+  const A = mode==='full'?assignFull():assignCircle();
+  const rows=Object.keys(A).map(k=>{
+    const isRed=k==='f';
+    return `<li><b style="color:${isRed?COL.red:COL.orb}">● ${orbName[k]}</b> → ${pname(A[k])}${isRed&&A[k]==='p2t'?' <span style="opacity:.75">(backup: P1 Tank)</span>':''}</li>`;
+  }).join('');
+  return `<ul>${rows}</ul>`;
+}
+
+/* ---------- boot ---------- */
+const grid=document.getElementById('grid');
+let players=[];
+function boot(){
+  legend();
+  grid.innerHTML='';
+  players=[
+    new Player(grid,'Pull &amp; start',1,()=>sceneStart(),{notes:()=>startNotes()}),
+    new Player(grid,'Orbs',2,m=>sceneOrbs(m),{tabs:[['full','Full arena'],['circle','Circle']],notes:m=>orbNotes(m),assign:m=>m==='full'?assignFull():assignCircle()}),
+    new Player(grid,'Circle reverts',3,()=>sceneRevert(),{notes:()=>`<ul>
+      <li><b>Before:</b> inside the circle is safe, outside is purple and <b>kills</b>.</li>
+      <li><b>When it reverts:</b> the whole circle turns red. Don't scatter: <b>group behind Ludra</b> first.</li>
+      <li><b>Exit together</b> through the back, out of the red circle, and <b>stay stacked</b> outside: it hurts out there, but grouped means the clerics' heals hit everyone.</li></ul>`}),
+    new Player(grid,'Tornadoes',4,()=>sceneTornado(),{notes:()=>`<ul>
+      <li><b>Ranged and clerics</b>: move far from the centre, to the edges of the arena, and keep your tornado out there, away from the others.</li>
+      <li><b>Melee</b> (tanks, chanters, melee DPS): stay on the boss and keep hitting.</li>
+      <li><b>Melee with a tornado</b>: run to the nearest ranged, leave the tornado there, then go straight back to the centre.</li>
+      <li><b>Never the opposite</b>: a ranged never brings a tornado to the boss.</li></ul>`}),
+    new Player(grid,'The eye',5,()=>sceneEye(),{notes:()=>`<ul>
+      <li><b>Marked with the eye</b>: go close to Ludra. When the orange cone appears on you, leave the middle of it and go round to the other side.</li>
+      <li><b>Everyone else</b>: move away from the marked player, to the other half of the arena, and stay out of the cone.</li>
+      <li>Here the eye is on the P1 back ranged, but it can be anyone: the moves are the same.</li></ul>`}),
+    new Player(grid,'Bingo',6,m=>sceneBingo(m),{tabs:[['v1','Version 1 · 1–0'],['v2','Version 2 · corners']],labels:m=>bingoLabels(m),notes:m=>{
+      const V=BINGO[m]; const who=id=>pname(id);
+      if(m==='v2') return `<ul>
+      <li><b>Party order</b> (both parties): tank no number · chanter <b>1</b> · DPS <b>2</b> · DPS <b>3</b> · cleric <b>4</b>.</li>
+      <li><b>Corners</b>: go to your number. <span class="p1tag">P1 takes the outer spot</span>, <span class="p2tag">P2 the inner one</span>.</li>
+      <li><b>Arrows</b>: 1 → right · 2 ↓ down · 3 ← left · 4 ↑ up. <b>Tanks start inside</b> (P1 tank down, P2 tank up). Dash one square per explosion.</li>
+      <li><b>After the 2nd explosion</b>: the <b>diagonal</b> hits (top-right → bottom-left), stay off it. Then the orbs appear and the <b>tanks go for them</b> (P2 tank front, P1 tank left).</li>
+      <li><b>The rest keep opening squares</b> until the blue one is found on the 4th explosion, then everyone hides in it.</li></ul>`;
+      return `<ul>
+      <li><b>Middle (up ↑)</b>: <span class="p1tag">P1</span> 1 chanter · 2 DPS · 3 DPS · 4 cleric</li>
+      <li><b>Middle (down ↓)</b>: <span class="p2tag">P2</span> 5 chanter · 6 DPS · 7 DPS · 8 cleric</li>
+      <li><b>Corners</b>: 9 P1 tank (top-left, down ↓) · 0 P2 tank (bottom-right, up ↑)</li>
+      <li>Each explosion: <b>dash one square along your arrow</b>. Red squares hurt, the blue one is the safe spot.</li>
+      <li><b>Orbs</b>: #2 takes the front one, #9 the left one. Then everyone hides in the blue square before the <b>diagonal</b> (top-right → bottom-left).</li></ul>`;}}),
+    new Player(grid,'Lines &amp; lasers',7,m=>sceneZikel(m),{phase:2,solo:'p1a',tabs:[['L','Left of the middle'],['R','Right of the middle']],notes:m=>`<ul>
+      <li><b>Lines</b> cross the arena: <b>orange</b> = deadly, <b>purple</b> = safe, go in.</li>
+      <li>Order: <b>horizontal</b> → <b>top-right → bottom-left</b> → <b>vertical</b> → <b>top-left → bottom-right</b>.</li>
+      <li>After each line turns purple, <b>lasers</b> cross the arena: top → bottom, right → left, left → right, bottom → top. <b>Lasers kill</b>: stand in the gap between two beams.</li>
+      <li><b>Never stand in an orange line</b>: anyone inside dies. Wait outside it until it turns purple.</li>
+      <li>Route (${m==='R'?'right':'left'}): ${m==='R'?'bottom → up to the horizontal line → higher on the diagonal → middle of the vertical line → top-left':'bottom → up to the horizontal line → back down on the diagonal → middle of the vertical line → right'}. Move slowly.</li></ul>`}),
+    new Player(grid,'Last bingo',8,()=>sceneBingo('last'),{phase:2,labels:()=>bingoLabels('last'),notes:()=>`<ul>
+      <li><b>After the 1st explosion</b>, balls appear just outside the <b>4 corners</b>: the corner players (P1 #1–#4) take them and go back to their spots.</li>
+      <li>Then it's the same as Bingo version 2: <b>orange circles</b>, dash along your arrow (1 → · 2 ↓ · 3 ← · 4 ↑), the rest keep opening until the <b>blue</b> square is found. Tanks stop after 2 dashes.</li>
+      <li><b>No side orbs and no diagonal attack</b> this time.</li></ul>`}),
+  ];
+}
+function refreshAll(){ players.forEach(p=>p.rebuild(true)); }
+
+document.querySelectorAll('.seg[data-cfg]').forEach(seg=>{
+  const key=seg.dataset.cfg;
+  const sync=()=>[...seg.children].forEach(b=>b.classList.toggle('on',String(cfg[key])===b.dataset.v));
+  seg.onclick=e=>{const v=e.target.dataset.v;if(!v)return;cfg[key]=key==='speed'?Number(v):v;sync();if(key!=='speed')refreshAll();};
+  sync();
+});
+document.getElementById('rot').onclick=()=>{cfg.rot=!cfg.rot;document.getElementById('rot').textContent=cfg.rot?'↻ Turned 180°':'↻ Turn 180°';refreshAll();};
+boot();
+
+/* ---------- one card at a time, with arrows ---------- */
+let active=0;
+function show(i){
+  active=Math.max(0,Math.min(players.length-1,i));
+  players.forEach((p,j)=>p.card.classList.toggle('active',j===active));
+  document.getElementById('prev').disabled=active===0;
+  document.getElementById('next').disabled=active===players.length-1;
+  document.querySelectorAll('#tabs .tab').forEach(b=>b.classList.toggle('on',+b.dataset.j===active));
+  players[active].rebuild(true); players[active].playing=true; players[active].updPlay();
+  try{ if(location.hash!=='#m'+(active+1)) history.replaceState(null,'','#m'+(active+1)); }catch(e){}
+}
+function buildTabs(){
+  const t=document.getElementById('tabs'); t.innerHTML='';
+  const names={1:'Phase 1 · Ludra',2:'Phase 2 · Zikel'};
+  for(const ph of [1,2]){
+    const row=document.createElement('div'); row.className='tabrow';
+    const lab=document.createElement('span'); lab.className='tabphase'; lab.textContent=names[ph]; row.appendChild(lab);
+    players.forEach((p,j)=>{ if(p.phase!==ph) return; const b=document.createElement('button');b.className='tab';b.innerHTML=`${j+1} · ${p.title}`;b.onclick=()=>show(j);b.dataset.j=j;row.appendChild(b);});
+    t.appendChild(row);
+  }
+}
+document.getElementById('prev').onclick=()=>show(active-1);
+document.getElementById('next').onclick=()=>show(active+1);
+document.addEventListener('keydown',e=>{ if(e.key==='ArrowRight')show(active+1); if(e.key==='ArrowLeft')show(active-1); });
+buildTabs();
+show((parseInt((location.hash||'').replace('#m',''))||1)-1);
+</script>
+</body>
+</html>
